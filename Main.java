@@ -8,74 +8,49 @@ import java.util.*;
 // 3
 
 class Main {
+    private static final int[] DR = { -1, 1, 0, 0 }, DC = { 0, 0, -1, 1 };
+    private static int R, C, max;
+    private static int[][] board, visited;
 
     public static void main(String[] args) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
         String[] rc = br.readLine().split(" ");
-        int R = Integer.parseInt(rc[0]), C = Integer.parseInt(rc[1]);
+        R = Integer.parseInt(rc[0]);
+        C = Integer.parseInt(rc[1]);
+        max = 0;
 
-        char[][] board = new char[R][C];
+        board = new int[R][C];
+        visited = new int[R][C];
+
         for (int i = 0; i < R; i++) {
             String l = br.readLine();
+
             for (int j = 0; j < C; j++) {
-                board[i][j] = l.charAt(j);
+                board[i][j] = 1 << (l.charAt(j) - 'A');
             }
         }
 
-        System.out.println(solution(R, C, board));
+        dfs(0, 0, board[0][0], 1);
+        System.out.println(max);
     }
 
-    public static final int[] DR = { -1, 1, 0, 0 }, DC = { 0, 0, -1, 1 };
+    private static void dfs(int r, int c, int bit, int count) {
+        max = Math.max(max, count);
+        if (max == 26)
+            return;
 
-    public static int solution(int R, int C, char[][] board) {
-        int[][] dist = new int[R][C];
-        dist[0][0] = 1;
-        int max = 1;
+        visited[r][c] = bit;
 
-        Stack<Point> s = new Stack<>();
-        Point start = new Point(0, 0);
-        start.alphabet += (board[0][0]);
-        s.push(start);
+        for (int i = 0; i < 4; i++) {
+            int nr = r + DR[i], nc = c + DC[i];
 
-        while (!s.isEmpty()) {
-            Point cur = s.pop();
+            if (nr < 0 || nc < 0 || nr >= R || nc >= C)
+                continue;
 
-            for (int i = 0; i < 4; i++) {
-                int r = cur.r + DR[i], c = cur.c + DC[i];
-
-                if (r < 0 || c < 0 || r >= R || c >= C)
-                    continue;
-
-                String nextStr = Character.toString(board[r][c]);
-
-                if (cur.alphabet.contains(nextStr))
-                    continue;
-
-                Point next = new Point(r, c);
-                next.alphabet += cur.alphabet + nextStr;
-                dist[r][c] = Math.max(dist[r][c], next.alphabet.length());
-                s.push(next);
+            if ((bit & board[nr][nc]) == 0 && (bit | board[nr][nc]) != visited[nr][nc]) {
+                dfs(nr, nc, bit | board[nr][nc], count + 1);
             }
         }
-
-        for (int i = 0; i < R; i++) {
-            for (int j = 0; j < C; j++) {
-                max = Math.max(max, dist[i][j]);
-            }
-        }
-
-        return max;
-    }
-}
-
-class Point {
-    int r, c;
-    String alphabet;
-
-    public Point(int r, int c) {
-        this.r = r;
-        this.c = c;
-        alphabet = "";
     }
 }
