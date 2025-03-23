@@ -1,93 +1,76 @@
-import java.io.*;
-import java.util.*;
-
-// 5 6  // V E
-// 1    // K
-// 5 1 1
-// 1 2 2
-// 1 3 3
-// 2 3 4
-// 2 4 5
-// 3 4 6
-
-// 5 6
-// 1
-// 5 1 1
-// 1 2 2
-// 1 3 3
-// 2 3 4
-// 2 4 5
-// 3 4 6
-
-// 0
-// 2
-// 3
-// 7
-// INF
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
 class Main {
     public static void main(String[] args) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 
-        String[] ve = br.readLine().split(" ");
-        int V = Integer.parseInt(ve[0]);
-        int E = Integer.parseInt(ve[1]);
-        int K = Integer.parseInt(br.readLine());
+        int n = Integer.parseInt(br.readLine());
+        Point S = null, E = null, A = null, a = null, B = null, b = null;
 
-        Map<Integer, List<Edge>> edges = new HashMap<>();
-        for (int i = 0; i < E; i++) {
-            String[] e = br.readLine().split(" ");
-            int u = Integer.parseInt(e[0]), v = Integer.parseInt(e[1]), w = Integer.parseInt(e[2]);
+        char[][] grid = new char[n][n];
+        for (int i = 0; i < n; i++) {
+            String s = br.readLine();
+            for (int j = 0; j < n; j++) {
+                char c = s.charAt(j * 2);
+                grid[i][j] = c;
 
-            if (!edges.containsKey(u))
-                edges.put(u, new ArrayList<>());
-
-            edges.get(u).add(new Edge(v, w));
-        }
-
-        int[] result = solution(V, K, edges);
-        StringBuilder sb = new StringBuilder();
-        for (int r : result) {
-            sb.append(r == Integer.MAX_VALUE ? "INF\n" : r + "\n");
-        }
-
-        System.out.println(sb.toString());
-    }
-
-    public static int[] solution(int V, int K, Map<Integer, List<Edge>> edges) {
-        int[] dist = new int[V + 1];
-        Arrays.fill(dist, Integer.MAX_VALUE);
-        dist[K] = 0;
-
-        PriorityQueue<Edge> pq = new PriorityQueue<>((x, y) -> x.dist - y.dist);
-        pq.add(new Edge(K, 0));
-
-        while (!pq.isEmpty()) {
-            Edge cur = pq.poll();
-
-            if (cur.dist > dist[cur.to] || !edges.containsKey(cur.to))
-                continue;
-
-            for (Edge next : edges.get(cur.to)) {
-                int newDist = cur.dist + next.dist;
-
-                if (newDist >= dist[next.to])
-                    continue;
-
-                dist[next.to] = newDist;
-                pq.add(new Edge(next.to, newDist));
+                if (c == 'S')
+                    S = new Point(i, j);
+                else if (c == 'E')
+                    E = new Point(i, j);
+                else if (c == 'A')
+                    A = new Point(i, j);
+                else if (c == 'a')
+                    a = new Point(i, j);
+                else if (c == 'B')
+                    B = new Point(i, j);
+                else if (c == 'b')
+                    b = new Point(i, j);
             }
         }
 
-        return Arrays.copyOfRange(dist, 1, V + 1);
+        System.out.println(aStar(n, grid, S, E, A, a, B, b));
+    }
+
+    public static int aStar(int n, char[][] grid, Point S, Point E, Point A, Point a, Point B, Point b) {
+        int[][] dist = new int[n][n];
+        for (int i = 0; i < n; i++)
+            Arrays.fill(dist[i], Integer.MAX_VALUE);
+        dist[S.row][S.col] = 1;
+
+        PriorityQueue<Point> pq = new PriorityQueue<>(Comparator.comparingInt((p) -> p.hv));
+
+        return 0;
     }
 }
 
-class Edge {
-    int to, dist;
+class Point implements Comparable<Point> {
+    int row, col, dist, hv;
 
-    public Edge(int to, int dist) {
-        this.to = to;
+    public Point(int row, int col) {
+        this.row = row;
+        this.col = col;
+        this.dist = 0;
+        this.hv = 0;
+    }
+
+    public Point(int row, int col, int dist, int hv) {
+        this.row = row;
+        this.col = col;
         this.dist = dist;
+        this.hv = hv;
+    }
+
+    public boolean equals(Point other) {
+        return this.row == other.row && this.col == other.col;
+    }
+
+    @Override
+    public int compareTo(Point other) {
+        return this.hv - other.hv != 0 ? this.hv - other.hv : this.row - other.row != 0 ? this.row - other.row : 0;
     }
 }
