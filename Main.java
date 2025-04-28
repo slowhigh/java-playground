@@ -9,8 +9,7 @@ class Main {
         String[] nm = br.readLine().split(" ");
         n = Integer.parseInt(nm[0]);
         m = Integer.parseInt(nm[1]);
-        long wallMap = -1L;
-        int wallCount = 0;
+        long wallMap = 0L;
         long virusMap = 0L;
         int maxSafeZone = 0;
         List<Integer> virus = new ArrayList<>();
@@ -18,49 +17,35 @@ class Main {
             String s = br.readLine();
             for (int j = 0; j < m; j++) {
                 char c = s.charAt(j * 2);
-                long bit = 1L << (m * i) + j;
-                if (c == '0') {
-                    wallMap ^= bit;
+                int idx = (m * i) + j;
+                if (c == '1') {
+                    wallMap |= 1L << idx;
                 } else if (c == '2') {
-                    wallMap ^= bit;
-                    virusMap |= bit;
-                    virus.add((m * i) + j);
-                } else {
-                    wallCount++;
+                    virusMap |= 1L << idx;
+                    virus.add(idx);
                 }
             }
         }
+        for (int i = 0; i < n * m; i++) {
+            if (checkBit(i, wallMap, virusMap)) continue;
+            for (int j = i + 1; j < (n * m) - 1; j++) {
+                if (checkBit(j, wallMap, virusMap)) continue;
+                for (int k = j + 1; k < (n * m) - 2; k++) {
+                    if (checkBit(k, wallMap, virusMap)) continue;
 
-        for (int i = 0; i < n * m - 2; i++) {
-            if (checkBit(i, wallMap) || checkBit(i, virusMap)) continue;
-            for (int j = i + 1; j < n * m - 1; j++) {
-                if (checkBit(j, wallMap) || checkBit(j, virusMap)) continue;
-                for (int k = j + 1; k < n * m; k++) {
-                    if (checkBit(k, wallMap) || checkBit(k, virusMap)) continue;
-                    long newVirusMap = virusMap;
-                    for (int v : virus) newVirusMap = countSafeZone(v, wallMap | 1L << i | 1L << j | 1L << k, newVirusMap);
-                    maxSafeZone = Math.max(maxSafeZone, (n * m) - wallCount - 3 - Long.bitCount(newVirusMap));
+
                 }
             }
         }
-
-        System.out.println(maxSafeZone);
     }
 
-    private static long countSafeZone(int vIdx, long wallMap, long virusMap) {
-        if (vIdx >= m && !checkBit(vIdx - m, wallMap) && !checkBit(vIdx - m, virusMap))
-            virusMap = countSafeZone(vIdx - m, wallMap, virusMap | 1L << (vIdx - m));
-        if (vIdx < m * (n - 1) && !checkBit(vIdx + m, wallMap) && !checkBit(vIdx + m, virusMap))
-            virusMap = countSafeZone(vIdx + m, wallMap, virusMap | 1L << (vIdx + m));
-        if (vIdx % m > 0 && !checkBit(vIdx - 1, wallMap) && !checkBit(vIdx - 1, virusMap))
-            virusMap = countSafeZone(vIdx - 1, wallMap, virusMap | 1L << (vIdx - 1));
-        if (vIdx < n * m && (vIdx + 1) % m != 0 && !checkBit(vIdx + 1, wallMap) && !checkBit(vIdx + 1, virusMap))
-            virusMap = countSafeZone(vIdx + 1, wallMap, virusMap | 1L << (vIdx + 1));
-
-        return virusMap;
+    private static long spread(int i, long wallMap, long virusMap) {
+        if (i >= m && !checkBit(i, wallMap, virusMap))
+            virusMap = spread(i - m, wallMap, virusMap | (1L << (i - m)))
+        if (i )
     }
 
-    private static boolean checkBit(int i, long bit) {
-        return ((1L << i) & bit) == (1L << i);
+    private static boolean checkBit(int i, long wallMap, long virusMap) {
+        return ((wallMap & (1L << i)) == (1L << i)) || ((virusMap & (1L << i)) == (1L << i));
     }
 }
