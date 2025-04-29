@@ -15,6 +15,7 @@ class Main {
         List<Integer> virus = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             String s = br.readLine();
+
             for (int j = 0; j < m; j++) {
                 char c = s.charAt(j * 2);
                 int idx = (m * i) + j;
@@ -26,26 +27,49 @@ class Main {
                 }
             }
         }
-        for (int i = 0; i < n * m; i++) {
-            if (checkBit(i, wallMap, virusMap)) continue;
+
+        long newWallMap, newVirusMap;
+        for (int i = 0; i < n * m - 2; i++) {
+            if (checkMap(i, wallMap, virusMap))
+                continue;
+
             for (int j = i + 1; j < (n * m) - 1; j++) {
-                if (checkBit(j, wallMap, virusMap)) continue;
-                for (int k = j + 1; k < (n * m) - 2; k++) {
-                    if (checkBit(k, wallMap, virusMap)) continue;
+                if (checkMap(j, wallMap, virusMap))
+                    continue;
 
+                for (int k = j + 1; k < (n * m); k++) {
+                    if (checkMap(k, wallMap, virusMap))
+                        continue;
 
+                    newWallMap = wallMap | 1L << i | 1L << j | 1L << k;
+                    newVirusMap = virusMap;
+
+                    for (int v : virus)
+                        newVirusMap = spread(v, newWallMap, newVirusMap);
+
+                    maxSafeZone = Math.max(maxSafeZone,
+                            (m * n) - Long.bitCount(newWallMap) - Long.bitCount(newVirusMap));
                 }
             }
         }
+
+        System.out.println(maxSafeZone);
     }
 
     private static long spread(int i, long wallMap, long virusMap) {
-        if (i >= m && !checkBit(i, wallMap, virusMap))
-            virusMap = spread(i - m, wallMap, virusMap | (1L << (i - m)))
-        if (i )
+        if (i - m >= 0 && !checkMap(i - m, wallMap, virusMap))
+            virusMap = spread(i - m, wallMap, virusMap | (1L << (i - m)));
+        if (i + m < m * n && !checkMap(i + m, wallMap, virusMap))
+            virusMap = spread(i + m, wallMap, virusMap | (1L << (i + m)));
+        if (i % m > 0 && !checkMap(i - 1, wallMap, virusMap))
+            virusMap = spread(i - 1, wallMap, virusMap | (1L << (i - 1)));
+        if ((i + 1) % m != 0 && !checkMap(i + 1, wallMap, virusMap))
+            virusMap = spread(i + 1, wallMap, virusMap | (1L << (i + 1)));
+
+        return virusMap;
     }
 
-    private static boolean checkBit(int i, long wallMap, long virusMap) {
+    private static boolean checkMap(int i, long wallMap, long virusMap) {
         return ((wallMap & (1L << i)) == (1L << i)) || ((virusMap & (1L << i)) == (1L << i));
     }
 }
