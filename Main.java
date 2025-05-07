@@ -2,8 +2,8 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
-    private static List<Integer>[] graph;
     private static int[] colors;
+    private static List<Integer>[] graph;
 
     public static void main(String[] args) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
@@ -14,7 +14,6 @@ public class Main {
             StringTokenizer st = new StringTokenizer(br.readLine());
             int V = Integer.parseInt(st.nextToken());
             int E = Integer.parseInt(st.nextToken());
-
             graph = new List[V + 1];
             for (int i = 1; i <= V; i++)
                 graph[i] = new ArrayList<>();
@@ -27,38 +26,28 @@ public class Main {
                 graph[v].add(u);
             }
 
-            colors = new int[V + 1]; // 0: 미방문, 1 or -1: 그룹 색상
             boolean result = true;
-
+            colors = new int[V + 1];
             for (int i = 1; i <= V; i++) {
-                if (colors[i] != 0)
-                    continue;
-
-                if (!dfsCheck(i, 1)) {
+                if (colors[i] == 0 && !dfs(i, 1)) {
                     result = false;
                     break;
                 }
             }
-
             sb.append(result ? "YES\n" : "NO\n");
         }
 
-        System.out.print(sb);
+        System.out.print(sb.toString());
     }
 
-    private static boolean dfsCheck(int node, int color) {
-        colors[node] = color;
-
-        for (int neighbor : graph[node]) {
-            if (colors[neighbor] == 0) {
-                if (!dfsCheck(neighbor, -color)) {
-                    return false;
-                }
-            } else if (colors[neighbor] == colors[node]) {
+    private static boolean dfs(int node, int color) {
+        colors[node] = -color;
+        for (int next : graph[node]) {
+            if (colors[next] != 0 && colors[next] == colors[node])
                 return false;
-            }
+            if (colors[next] == 0 && !dfs(next, colors[node]))
+                return false;
         }
-
         return true;
     }
 }
