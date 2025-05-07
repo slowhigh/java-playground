@@ -3,6 +3,7 @@ import java.util.*;
 
 class Main {
     private static final int S = 9;
+    private static final int BOX_SIZE = 3;
     private static final int BLANK = 0;
     private static int[][] grid;
     private static boolean[][] rowCheck, colCheck, boxCheck;
@@ -24,24 +25,19 @@ class Main {
                 grid[i][j] = num;
                 if (num == BLANK) {
                     blanks.add(new int[] { i, j });
-                    continue;
+                } else {
+                    rowCheck[i][num] = colCheck[j][num] = boxCheck[getBoxIdx(i, j)][num] = true;
                 }
-
-                rowCheck[i][num] = true;
-                colCheck[j][num] = true;
-                boxCheck[getBoxIdx(i, j)][num] = true;
             }
         }
 
         check(0);
 
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < S; i++) {
-            for (int j = 0; j < S; j++) {
-                sb.append(grid[i][j]);
-                sb.append((j < S - 1) ? " " : "\n");
-            }
-        }
+        for (int i = 0; i < S; i++)
+            for (int j = 0; j < S; j++)
+                sb.append(grid[i][j]).append((j < S - 1) ? " " : "\n");
+
         System.out.print(sb.toString());
     }
 
@@ -50,31 +46,27 @@ class Main {
             return true;
 
         int[] blank = blanks.get(idx);
-        int row = blank[0];
-        int col = blank[1];
+        int row = blank[0], col = blank[1];
+        int box = getBoxIdx(row, col);
 
         for (int num = 1; num <= S; num++) {
-            if (rowCheck[row][num] || colCheck[col][num] || boxCheck[getBoxIdx(row, col)][num])
+            if (rowCheck[row][num] || colCheck[col][num] || boxCheck[box][num])
                 continue;
 
             grid[row][col] = num;
-            rowCheck[row][num] = true;
-            colCheck[col][num] = true;
-            boxCheck[getBoxIdx(row, col)][num] = true;
+            rowCheck[row][num] = colCheck[col][num] = boxCheck[box][num] = true;
 
             if (check(idx + 1))
                 return true;
 
             grid[row][col] = BLANK;
-            rowCheck[row][num] = false;
-            colCheck[col][num] = false;
-            boxCheck[getBoxIdx(row, col)][num] = false;
+            rowCheck[row][num] = colCheck[col][num] = boxCheck[box][num] = false;
         }
 
         return false;
     }
 
     private static int getBoxIdx(int row, int col) {
-        return ((row / 3) * 3) + (col / 3);
+        return ((row / BOX_SIZE) * BOX_SIZE) + (col / BOX_SIZE);
     }
 }
