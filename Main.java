@@ -2,52 +2,69 @@ import java.io.*;
 import java.util.*;
 
 public class Main {
-    private static int[] colors;
-    private static List<Integer>[] graph;
+    private static int[] root;
 
     public static void main(String[] args) throws Exception {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        int K = Integer.parseInt(br.readLine());
-        StringBuilder sb = new StringBuilder();
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        int V = Integer.parseInt(st.nextToken());
+        int E = Integer.parseInt(st.nextToken());
 
-        for (int k = 0; k < K; k++) {
-            StringTokenizer st = new StringTokenizer(br.readLine());
-            int V = Integer.parseInt(st.nextToken());
-            int E = Integer.parseInt(st.nextToken());
-            graph = new List[V + 1];
-            for (int i = 1; i <= V; i++)
-                graph[i] = new ArrayList<>();
-
-            for (int i = 0; i < E; i++) {
-                st = new StringTokenizer(br.readLine());
-                int u = Integer.parseInt(st.nextToken());
-                int v = Integer.parseInt(st.nextToken());
-                graph[u].add(v);
-                graph[v].add(u);
-            }
-
-            boolean result = true;
-            colors = new int[V + 1];
-            for (int i = 1; i <= V; i++) {
-                if (colors[i] == 0 && !dfs(i, 1)) {
-                    result = false;
-                    break;
-                }
-            }
-            sb.append(result ? "YES\n" : "NO\n");
+        Edge[] edges = new Edge[E];
+        for (int i = 0; i < E; i++) {
+            st = new StringTokenizer(br.readLine());
+            int A = Integer.parseInt(st.nextToken());
+            int B = Integer.parseInt(st.nextToken());
+            int C = Integer.parseInt(st.nextToken());
+            edges[i] = new Edge(A, B, C);
         }
 
-        System.out.print(sb.toString());
+        Arrays.sort(edge);
+
+        root = new int[V + 1];
+        for (int i = 1; i <= V; i++)
+            root[i] = i;
+
+        int sum = 0, count = 0;
+        for (Edge edge : edges) {
+            if (findRoot(edge.u) == findRoot(edge.v))
+                continue;
+
+            unionRoot(edge.u, edge.v);
+            sum += edge.weight;
+            count++;
+            if (count == V - 1)
+                break;
+        }
+
+        System.out.print(sum);
     }
 
-    private static boolean dfs(int node, int color) {
-        colors[node] = -color;
-        for (int next : graph[node]) {
-            if (colors[next] != 0 && colors[next] == colors[node])
-                return false;
-            if (colors[next] == 0 && !dfs(next, colors[node]))
-                return false;
+    private static int findRoot(int node) {
+        if (root[node] != node)
+            root[node] = findRoot(root[node]);
+
+        return root[node];
+    }
+
+    private static void unionRoot(int node1, int node2) {
+        int root1 = findRoot(node1);
+        int root2 = findRoot(node2);
+        if (root1 != root2)
+            root[root1] = root2;
+    }
+
+    static class Edge implements Comparable<Edge> {
+        int u, v, weight;
+
+        public Edge(int u, int v, int weight) {
+            this.u = u;
+            this.v = v;
+            this.weight = weight;
         }
-        return true;
+
+        public int compareTo(Edge o) {
+            return Integer.compare(this.weight, o.weight);
+        }
     }
 }
